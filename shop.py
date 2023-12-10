@@ -1,89 +1,79 @@
 import os
-import multiprocessing
+import sqlite3
 
-from flask import Flask, redirect, render_template
+from flask import Flask, redirect, render_template, session, request
+from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 import stdiomask
 
 # Configure application
-# shop = Flask(__name__)
+shop = Flask(__name__)
 
-userDictList = []
-session = {}
+#Configure session to use filesystem (instead of signed cookies)
+shop.config["SESSION_PERMANENT"] = False
+shop.config["SESSION_TYPE"] = "filesystem"
+Session(shop)
 
-# @shop.route("/register", methods=["GET", "POST"])
+db = sqlite3.connect("shop")
+
+
+#Endpoints
+
+@shop.route("/")
+def index():
+    return render_template("register.html")
+
+@shop.route("/register", methods=["GET", "POST"])
 def register():
-    # if request.method == "POST":
+    session.clear()
 
+    if request.method == "POST":
         
-        username = input("Username: ")
-        password = stdiomask.getpass()
-        confirmation = stdiomask.getpass()
+        username = request.form.get("username")
+        user = db.execute("SELECT * FROM users WHERE username=?", username)
+        if not username or len(user)!=0:
+            return ("Username already in use or is empty")
+        
+        password = request.form.get("password")
+        confirmation = request.form.get("confirmation")
+        if not passsword or password!=confirmation:
+            return ("Please provide a valid password that matches its confirmation.")
 
-        if not password or password!=confirmation:
-            print ("Please provide a valid password that matches its confirmation.")
-        else:
-            userDict = {
-                        "username": username,
-                        "password": password
-                        }
-            userDictList.append(userDict)
-            # print(f"Your username is {username} and your password is {password}")
-            # print(userDict)
-            # print(userDictList)
+        db.execute("INSERT INTO users(username, hash) VALUES (?, ?)", username, generate_password_hash(password))
+        return redirect("/login")
+    else:
+        return render_template("register.html")
 
-# @shop.route("/login", methods=["GET", "POST"])
+@shop.route("/login", methods=["GET", "POST"])
 def login():
 
-    print()
-    print("PLAESE LOG IN")
-    print()
-    username = input("Username: ")
-    password = stdiomask.getpass()
+    session.clear()
+    if request.method == "POST":
 
-    # foundUsername = []
-    # foundPass = []
-    # for element in userDictList:
-    #     if element["username"]==username:
-    #         foundUsername.append(username)
-    # for element in userDictList:
-    #     if element["password"]==password:
-    #         foundUsername.append(password)
+        if not request.form.get("username"):
+            return ("Please provide username")
+        if not request.form.get("password"):
+            return ("Please provide password")
+        
+        userInfo = db.execute("SELECT * FROM users where username=?", request.form.get("username"))
 
-    for dictionary in userDictList:
-        if username in dictionary.values():
-            if password == dictionary["password"]:
-                print("You are logged in!")
-                session["username"]=username
-                session["password"]=password
-                return session
-            else:
-                print("Incorrect Username or Password")
-                return 0
-    print("Incorrect Username or Password")
-    return 0
+        #Ensure username exists and password is correct
+        if len(userInfo)!=1 or not check_password_hash(userInfo[0]["hash"], request.form("password")):
+            return("Invalid username or password")
+        
+        session["user_id"] = userInfo[0]["id"]
 
-    # print(list(filter(lambda item: item["username"]==username, userDictList))[0]['username'])
+        #TODO You will have to change the redirect here to the main page
+        return redirect("/")
+    else:
+        return render_template("login.html")
 
-    #####
 
-    # if not foundUsername or not foundPass:
-    #     print("Incorrect Username or Password")
-    # else:
-    #     print("You are logged in!")
 
-    # print(f"foundUsername: {foundUsername}")
-    # print(f"foundPass: {foundPass}")
-    # return username, password
-
-# @shop.route("/logout")
+@shop.route("/logout")
 def logout():
     session.clear()
 
+    return redirect("/login")
 
-if __name__=="__main__":
-    # shop.run(debug=True)
-    for i in range(1):
-        register()
-    login()
 
