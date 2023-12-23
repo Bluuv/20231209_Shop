@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+            <a href="/">Home</a>
+            {% if session["user_id"] %}
+                <a href="/account">{{session["username"]}}</a>
+                <a href="/cart">Cart - {{session["money"]}}</a>               
+            {% endif %}
+        </div>
+        <div class="nav-right">
+            <a href="/register">Register</a>
+            {% if session["user_id"] %}
+                <a href="/logout" id="logoutBtn">Logout</a>
+            {% else %}
+                <a href="/login" id="loginBtn">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+    {% block main %}
+    {% endblock %}
+    <!-- <script src="static/script.js"></script> -->
+</body>
+</html>

@@ -5,3 +5,7 @@ SELECT * FROM products;
 ALTER TABLE products ADD photo BLOB;
 
 CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, hash TEXT NOT NULL );
+
+ALTER TABLE users ADD money NUMERIC DEFAULT 0.00;
+
+UPDATE users SET money = 50.50 WHERE username='rox';

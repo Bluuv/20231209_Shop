@@ -7,12 +7,12 @@
 {% block main %}
     
     <div class="content">
-        <h2>User Registration</h2>
+        <h2>User Login</h2>
     </div>
     
     <div class="userInput">
 
-        <form id="registerForm" action="/register" method="post">
+        <form id="registerForm" action="/login" method="post">
             <div>
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
@@ -24,16 +24,9 @@
                 <input type="password" id="password" name="password" required>
                 <span class="password-toggle" onclick="togglePassword('password')">Show</span>
             </div>
-
-            
-            <div class="password-container">
-                <label for="confirmation">Confirm Password:</label>
-                <input type="password" id="confirmation" name="confirmation" required>
-                <span class="password-toggle" onclick="togglePassword('confirmation')">Show</span>
-            </div>
-
+        
             <div class="content">
-                <button type="submit">Register</button>
+                <button type="submit">Login</button>
             </div>
         </form>
     </div>
