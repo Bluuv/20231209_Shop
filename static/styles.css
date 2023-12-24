@@ -86,6 +86,16 @@ h2{
     background-color: #e3fae6;
 
   }
+
+  #contzoom {
+    display: block;
+    margin-left: 10rem;
+    margin-right: 10rem;
+    margin-top: 2rem;
+    background-color: #e3fae6;
+
+  }
+
 #cont>div {
     background: #c1c1ff;
     margin-bottom: 5px;
@@ -117,3 +127,6 @@ a:hover {
     color: rgb(232, 208, 247);
 }
 
+.cart{
+    margin: auto;
+}

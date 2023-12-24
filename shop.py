@@ -37,17 +37,26 @@ items=[]
 @shop.route("/")
 def index():
     global items
+    items=getItems()
+    return render_template("index.html", items=items)
+
+def getItems():
     items=getSelectData("SELECT * FROM products", [])
     for element in items:
         img_base64= base64.b64encode(element["photo"]).decode('utf-8')
         element["photo"]=img_base64
-    return render_template("index.html", items=items)
-
+    return items
 
 @shop.route("/item")
 def item():
+    global items
+    items=getItems()
+    foundItem={}
     item_id = request.args.get('item', '')
-    return render_template("item.html", item_id=item_id)
+    for element in items:
+        if element["id"]==int(item_id):
+            foundItem=element    
+    return render_template("item.html", item_id=item_id, foundItem=foundItem)
 
 @shop.route("/register", methods=["GET", "POST"])
 def register():
@@ -94,8 +103,9 @@ def login():
         session["user_id"] = userInfo[0]["id"]
         session["username"] = userInfo[0]["username"]
         session["money"] = userInfo[0]["money"]
+        session["cart"]=[]
        
-        return render_template("index.html", userInfo=userInfo)
+        return redirect("/")
     else:
         return render_template("login.html")
 
@@ -123,9 +133,35 @@ def account():
     
 @shop.route("/cart", methods=["GET", "POST"])
 def cart():
+    total=0
+    for element in session["cart"]:
+        total=total+element["item_price"]
     if request.method=="GET":
-        return render_template("cart.html")
+        return render_template("cart.html", total=total)
+    else:
+        userMoney=session["money"]
+        if userMoney<total:
+            return render_template("apology.html")
+        else:
+            session["money"]=userMoney-total
+            cursor.execute("UPDATE users SET money=? WHERE id=?", [session["money"], session["user_id"]])
+            db.commit()
+            session["cart"].clear()
+            return redirect ("/cart")
 
+@shop.route("/addToCart", methods=["GET"])
+def addToCart():
+    item_id = request.args.get('item', '')
+    item_price = request.args.get('price', '')
+    item_name = request.args.get('name', '')
+    itemcart={}
+    itemcart["item_id"]=item_id
+    itemcart["item_price"]=float(item_price)
+    itemcart["item_name"]=item_name
+    session["cart"].append(itemcart)
+
+    return ('', 204)
+    
 
 
 
